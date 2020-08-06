@@ -1,0 +1,32 @@
+{
+  "name": "customer-manager-api",
+  "version": "1.0.0",
+  "description": "exposes CRUDL end points for customer collection in MongoDB",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest --testEnvironment=node --clearMocks=true",
+    "start": "node server.js",
+    "coverage": "jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnushaSankaranarayanan/customer-manager-api.git"
+  },
+  "keywords": [],
+  "author": "anusha",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AnushaSankaranarayanan/customer-manager-api/issues"
+  },
+  "homepage": "https://github.com/AnushaSankaranarayanan/customer-manager-api#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "http-status-codes": "^1.4.0",
+    "mongoose": "^5.9.27"
+  },
+  "devDependencies": {
+    "jest": "^26.2.2",
+    "validator": "^13.1.1"
+  }
+}
