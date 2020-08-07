@@ -7,12 +7,12 @@ module.exports = (app) => {
     // Retrieve all customers
     //app.get('/customer', customerController.findAll);
 
-    // Retrieve a single customer with customerId
-    //app.get('/customer/:customerId', customerController.findOne);
+    // Retrieve a single customer by customerId
+    app.get('/customer/:customerId', customerController.findOne);
 
-    // Update a customer with customerId
+    // Update a customer by customerId
     //app.put('/customer/:customerId', customerController.update);
 
-    // Delete a customer with customerId
+    // Delete a customer by customerId
     //app.delete('/customer/:customerId', customerController.delete);
 }
