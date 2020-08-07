@@ -11,8 +11,8 @@ module.exports = (app) => {
     app.get('/customer/:customerId', customerController.findOne);
 
     // Update a customer by customerId
-    //app.put('/customer/:customerId', customerController.update);
+    app.put('/customer/:customerId', customerController.update);
 
     // Delete a customer by customerId
-    //app.delete('/customer/:customerId', customerController.delete);
+    app.delete('/customer/:customerId', customerController.delete);
 }

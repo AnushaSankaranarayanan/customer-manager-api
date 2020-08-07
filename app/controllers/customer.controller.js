@@ -50,6 +50,7 @@ exports.create = (req, res) => {
 
 }
 
+
 //Find a single customer based on Id
 exports.findOne = (req, res) => {
     Customer.findById(req.params.customerId)
@@ -87,6 +88,107 @@ exports.findOne = (req, res) => {
         )
 
 }
+
+// Update a customer based on Id
+exports.update = (req, res) => {
+    // Validate Request
+    if (!req.body) {
+        return res.status(HttpStatus.BAD_REQUEST).send(
+            prepareResponse(HttpStatus.BAD_REQUEST,
+                HttpStatus.getStatusText(HttpStatus.BAD_REQUEST),
+                "Customer cannot be null",
+                null))
+    }
+
+    // Find customer and update it with the request body
+    Customer.findOneAndUpdate(
+        {
+            _id: req.params.customerId
+        },
+        {
+            name: req.body.name,
+            surname: req.body.surname,
+            email: req.body.email,
+            initials: req.body.initials,
+            mobile: req.body.mobile,
+            lastupdated: new Date()
+        },
+        {
+            new: true,
+            runValidators: true
+        })
+        .then(
+            customer => {
+                if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
+                    return res.status(HttpStatus.NOT_FOUND).send(
+                        prepareResponse(HttpStatus.NOT_FOUND,
+                            HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
+                            `Customer not found in Database ${req.params.customerId}`,
+                            null))
+                }
+                return res.status(HttpStatus.OK).send(
+                    prepareResponse(HttpStatus.OK,
+                        HttpStatus.getStatusText(HttpStatus.OK),
+                        "Customer updated successfully",
+                        customer))
+            }
+        )
+        .catch(err => {
+            if ('ObjectId' === err.kind) {
+                return res.status(HttpStatus.NOT_FOUND).send(
+                    prepareResponse(HttpStatus.NOT_FOUND,
+                        HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
+                        `Customer not found in Database: ${req.params.customerId}`,
+                        null))
+            }
+            if ('ValidationError' === err.name) {
+                return res.status(HttpStatus.BAD_REQUEST).send(
+                    prepareResponse(HttpStatus.BAD_REQUEST,
+                        HttpStatus.getStatusText(HttpStatus.BAD_REQUEST),
+                        err.message || "Validation Error",
+                        null))
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
+                prepareResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                    HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR),
+                    err.message || "Error occurred when updating customer",
+                    null))
+        }
+        )
+}
+
+// Delete a customer based on Id
+exports.delete = (req, res) => {
+    Customer.findByIdAndRemove(req.params.customerId)
+        .then(customer => {
+            if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
+                return res.status(HttpStatus.NOT_FOUND).send(
+                    prepareResponse(HttpStatus.NOT_FOUND,
+                        HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
+                        `Customer not found in Database ${req.params.customerId}`,
+                        null))
+            }
+            return res.status(HttpStatus.OK).send(
+                prepareResponse(HttpStatus.OK,
+                    HttpStatus.getStatusText(HttpStatus.OK),
+                    "Customer deleted successfully",
+                    customer))
+        }).catch(err => {
+            if (err.kind === 'ObjectId') {
+                return res.status(HttpStatus.NOT_FOUND).send(
+                    prepareResponse(HttpStatus.NOT_FOUND,
+                        HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
+                        `Customer not found in Database: ${req.params.customerId}`,
+                        null))
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
+                prepareResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                    HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR),
+                    err.message || "Error occurred when deleting customer",
+                    null))
+        })
+}
+
 
 function prepareResponse(code, status, message, payload) {
     return {

@@ -13,6 +13,7 @@ const mockResponse = () => {
 const mockRequest = () => {
   const req = {}
   req.params = jest.fn().mockReturnValue(req)
+  req.query = jest.fn().mockReturnValue(req)
   return req
 };
 
@@ -102,6 +103,159 @@ describe('Customer controller tests', () => {
     await customerController.findOne(req, res);
     expect(res.status).toBeCalledWith(200);
     expect(getSpy).toBeCalledWith(req.params.customerId);
+  });
+
+  test('Update Customer Invalid request body - Failure', async () => {
+    const getSpy = jest.fn().mockReturnValue(Promise.resolve({}))
+    Customer.findOneAndUpdate.mockImplementation(getSpy);
+    const req = mockRequest();
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.update(req, res);
+    expect(res.status).toBeCalledWith(400);
+  });
+
+
+  test('Update Customer by Invalid Id - Failure', async () => {
+    const error = new Error();
+    error.kind = 'ObjectId'
+    const getSpy = jest.fn().mockReturnValue(Promise.reject(error));
+    Customer.findOneAndUpdate.mockImplementation(getSpy);
+    const req = mockRequest();
+    req.body = {
+      name: 'testname',
+      surname: 'test surname',
+      email: 'test@example.com',
+      initials: 't',
+      mobile: '01234567'
+    }
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.update(req, res);
+    expect(getSpy).toHaveBeenCalled();
+    //expect(res.status).toBeCalledWith(400);
+  });
+
+  test('Update Customer invalid email - Failure', async () => {
+    const error = new Error();
+    error.name = 'ValidationError'
+    const getSpy = jest.fn().mockReturnValue(Promise.reject(error));
+    Customer.findOneAndUpdate.mockImplementation(getSpy);
+    const req = mockRequest();
+    req.body = {
+      name: 'testname',
+      surname: 'test surname',
+      email: 'testexample.com',
+      initials: 't',
+      mobile: '01234567'
+    }
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.update(req, res);
+    expect(getSpy).toHaveBeenCalled();
+    //expect(res.status).toBeCalledWith(400);
+  });
+
+  test('Update Customer server error - Failure', async () => {
+    const error = new Error();
+    const getSpy = jest.fn().mockReturnValue(Promise.reject(error));
+    Customer.findOneAndUpdate.mockImplementation(getSpy);
+    const req = mockRequest();
+    req.body = {
+      name: 'testname',
+      surname: 'test surname',
+      email: 'test@example.com',
+      initials: 't',
+      mobile: '01234567'
+    }
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.update(req, res);
+    expect(getSpy).toHaveBeenCalled();
+    //expect(res.status).toBeCalledWith(400);
+  });
+
+  test('Update Customer who was deleted before - Failure', async () => {
+    const getSpy = jest.fn().mockReturnValue(Promise.resolve(null));
+    Customer.findOneAndUpdate.mockImplementation(getSpy);
+    const req = mockRequest();
+    req.body = {
+      name: 'testname',
+      surname: 'test surname',
+      email: 'test@example.com',
+      initials: 't',
+      mobile: '01234567'
+    }
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.update(req, res);
+    expect(getSpy).toHaveBeenCalled();
+    expect(res.status).toBeCalledWith(404);
+  });
+
+  test('Update Customer - Successful', async () => {
+    const getSpy = jest.fn().mockReturnValue(Promise.resolve({}));
+    Customer.findOneAndUpdate.mockImplementation(getSpy);
+    const req = mockRequest();
+    req.body = {
+      name: 'testname',
+      surname: 'test surname',
+      email: 'test@example.com',
+      initials: 't',
+      mobile: '01234567'
+    }
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.update(req, res);
+    expect(getSpy).toHaveBeenCalled();
+    expect(res.status).toBeCalledWith(200);
+  });
+
+  test('Delete Customer by Invalid Id - Failure', async () => {
+    const error = new Error();
+    error.kind = 'ObjectId'
+    const getSpy = jest.fn().mockReturnValue(Promise.reject(error));
+    Customer.findByIdAndRemove.mockImplementation(getSpy);
+    const req = mockRequest();
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.delete(req, res);
+    expect(getSpy).toBeCalledWith(req.params.customerId);
+    //expect(res.status).toBeCalledWith(400);
+  });
+
+  test('Delete Customer Server Error - Failure', async () => {
+    const error = new Error();
+    const getSpy = jest.fn().mockReturnValue(Promise.reject(error));
+    Customer.findByIdAndRemove.mockImplementation(getSpy);
+    const req = mockRequest();
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.delete(req, res);
+    expect(getSpy).toBeCalledWith(req.params.customerId);
+    //expect(res.status).toBeCalledWith(400);
+  });
+
+  test('Delete Customer who was deleted before - Failure', async () => {
+    const getSpy = jest.fn().mockReturnValue(Promise.resolve(null));
+    Customer.findByIdAndRemove.mockImplementation(getSpy);
+    const req = mockRequest();
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.delete(req, res);
+    expect(getSpy).toBeCalledWith(req.params.customerId);
+    expect(res.status).toBeCalledWith(404);
+  });
+
+  test('Delete Customer - Successful', async () => {
+    const getSpy = jest.fn().mockReturnValue(Promise.resolve({}));
+    Customer.findByIdAndRemove.mockImplementation(getSpy);
+    const req = mockRequest();
+    const res = mockResponse();
+    req.params = { customerId: '123' };
+    await customerController.delete(req, res);
+    expect(getSpy).toBeCalledWith(req.params.customerId);
+    expect(res.status).toBeCalledWith(200);
   });
 
 })
