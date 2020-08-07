@@ -5,7 +5,7 @@ module.exports = (app) => {
     app.post('/customer', customerController.create);
 
     // Retrieve all customers
-    //app.get('/customer', customerController.findAll);
+    app.get('/customer', customerController.findAll);
 
     // Retrieve a single customer by customerId
     app.get('/customer/:customerId', customerController.findOne);

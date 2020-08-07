@@ -105,6 +105,50 @@ describe('Customer controller tests', () => {
     expect(getSpy).toBeCalledWith(req.params.customerId);
   });
 
+  test('Get All Customers Server Error - Failure', async () => {
+    const error = new Error();
+    const getSpy = jest.fn().mockReturnValue(Promise.reject(error));
+    Customer.paginate.mockImplementation(getSpy);
+    const req = mockRequest();
+    const res = mockResponse();
+    await customerController.findAll(req, res);
+    expect(getSpy).toBeCalled();
+    //expect(res.status).toBeCalledWith(400);
+  });
+
+  test('Get All Customers with Query Parameters(offset ,limit, sortkey and sortdir)- Successful', async () => {
+    const getSpy = jest.fn().mockReturnValue(Promise.resolve({}));
+    Customer.paginate.mockImplementation(getSpy);
+    const res = mockResponse();
+    const req = mockRequest();
+    req.query = { offset: 10, limit: 10, sortkey: 'name', sortdir: 'asc' };
+    await customerController.findAll(req, res);
+    expect(res.status).toBeCalledWith(200);
+    expect(getSpy).toBeCalled()
+  });
+
+  test('Get All Customers with more than the allowed limit - Successful', async () => {
+    const getSpy = jest.fn().mockReturnValue(Promise.resolve({}));
+    Customer.paginate.mockImplementation(getSpy);
+    const res = mockResponse();
+    const req = mockRequest();
+    req.query = { offset: 10, limit: 10000, sortkey: 'name', sortdir: 'asc' };
+    await customerController.findAll(req, res);
+    expect(res.status).toBeCalledWith(200);
+    expect(getSpy).toBeCalled()
+  });
+
+
+  test('Get All Customers with default parameters- Successful', async () => {
+    const getSpy = jest.fn().mockReturnValue(Promise.resolve({}));
+    Customer.paginate.mockImplementation(getSpy);
+    const res = mockResponse();
+    const req = mockRequest();
+    await customerController.findAll(req, res);
+    expect(res.status).toBeCalledWith(200);
+    expect(getSpy).toBeCalled()
+  });
+
   test('Update Customer Invalid request body - Failure', async () => {
     const getSpy = jest.fn().mockReturnValue(Promise.resolve({}))
     Customer.findOneAndUpdate.mockImplementation(getSpy);

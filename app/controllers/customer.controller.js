@@ -50,6 +50,25 @@ exports.create = (req, res) => {
 
 }
 
+// Retrieve and return all notes from the database.
+exports.findAll = (req, res) => {
+    Customer.paginate({}, prepareFindOptions(req.query))
+        .then(
+            customers => res.status(HttpStatus.OK).send(
+                prepareResponse(HttpStatus.OK,
+                    HttpStatus.getStatusText(HttpStatus.OK),
+                    "Customer retrieved successfully",
+                    customers)
+            )
+        ).catch(err => {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
+                prepareResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                    HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR),
+                    err.message || "Error occurred when retrieving customer",
+                    null))
+        }
+        )
+}
 
 //Find a single customer based on Id
 exports.findOne = (req, res) => {
@@ -189,6 +208,31 @@ exports.delete = (req, res) => {
         })
 }
 
+/**
+ * Default sorting of the results is by last updated timestamp in descending order.
+ * Default values for offset is 0 and limit is 25.
+ * Maximum value of limit is 100 to avoid attacks like Denial of Service
+ **/
+function prepareFindOptions(reqQuery) {
+    const LIMIT_RECORD_LISTING = 100
+    const defaultSortBy = 'lastupdated'
+    // Check if the sort key is one of the DB columns
+    const sortKey = reqQuery.sortkey ? (
+        Object.keys(Customer.schema.paths).some(v => reqQuery.sortkey === v) ? reqQuery.sortkey : defaultSortBy)
+        : defaultSortBy
+
+    const sortDir = reqQuery.sortdir === 'asc' ? 1 : -1
+    const offset = reqQuery.offset || 0
+    let limit = reqQuery.limit || 25
+    if (limit > LIMIT_RECORD_LISTING) {
+        limit = LIMIT_RECORD_LISTING
+    }
+    return {
+        sort: { [sortKey]: sortDir },
+        offset,
+        limit
+    }
+}
 
 function prepareResponse(code, status, message, payload) {
     return {
