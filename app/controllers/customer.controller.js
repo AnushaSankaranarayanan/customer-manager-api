@@ -1,18 +1,15 @@
 const Customer = require('../models/customer.model')
-var HttpStatus = require('http-status-codes')
+const HttpStatus = require('http-status-codes')
 
-// Create and Save a new Customer
+/**
+ * Save new customer to the database.
+ * Return OK for success
+ * Return BAD_REQUEST for invalid requests.
+ * Return SERVER_ERROR for any exceptions.
+ * @param {Object} req - Http Request
+ * @param {Object} res - Http Response
+ **/
 exports.create = (req, res) => {
-    // Validate request
-    if (!req.body) {
-        return res.status(HttpStatus.BAD_REQUEST).send(
-            prepareResponse(HttpStatus.BAD_REQUEST,
-                HttpStatus.getStatusText(HttpStatus.BAD_REQUEST),
-                "Customer cannot be null",
-                null)
-        )
-    }
-
     // Create a Customer
     const customer = new Customer({
         name: req.body.name,
@@ -25,100 +22,50 @@ exports.create = (req, res) => {
 
     // Save Customer in DB
     customer.save()
-        .then(
-            customer => res.status(HttpStatus.CREATED).send(
-                prepareResponse(HttpStatus.CREATED,
-                    HttpStatus.getStatusText(HttpStatus.CREATED),
-                    "Customer created successfully",
-                    customer)
-            )
-        ).catch(err => {
-            if ('ValidationError' === err.name) {
-                return res.status(HttpStatus.BAD_REQUEST).send(
-                    prepareResponse(HttpStatus.BAD_REQUEST,
-                        HttpStatus.getStatusText(HttpStatus.BAD_REQUEST),
-                        err.message || "Validation Error",
-                        null))
-            }
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-                prepareResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                    HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR),
-                    err.message || "Error occurred when saving customer",
-                    null))
-        }
-        )
-
+        .then(createdCustomer => sendSucessResponse(res, createdCustomer, "Customer created successfully"))
+        .catch(err => sendErorResponse(res, err))
 }
-
-// Retrieve and return all notes from the database.
+/**
+ * Retrieve all customers from the database.
+ * Return OK for success
+ * Return SERVER_ERROR for other exceptions.
+ * @param {Object} req - Http Request
+ * @param {Object} res - Http Response
+ **/
 exports.findAll = (req, res) => {
     Customer.paginate({}, prepareFindOptions(req.query))
-        .then(
-            customers => res.status(HttpStatus.OK).send(
-                prepareResponse(HttpStatus.OK,
-                    HttpStatus.getStatusText(HttpStatus.OK),
-                    "Customer retrieved successfully",
-                    customers)
-            )
-        ).catch(err => {
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-                prepareResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                    HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR),
-                    err.message || "Error occurred when retrieving customer",
-                    null))
-        }
-        )
+        .then(customers => sendSucessResponse(res, customers, "Customer retrieved successfully"))
+        .catch(err => sendErorResponse(res, err))
 }
 
-//Find a single customer based on Id
+/**
+ * Find a single customer based on Id.
+ * Return OK for success
+ * Return NOT_FOUND reponse if ID is not present in the database.
+ * Return SERVER_ERROR for any other exceptions. 
+ * @param {Object} req - Http Request
+ * @param {Object} res - Http Response
+ **/
 exports.findOne = (req, res) => {
     Customer.findById(req.params.customerId)
-        .then(
-            customer => {
-                if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
-                    return res.status(HttpStatus.NOT_FOUND).send(
-                        prepareResponse(HttpStatus.NOT_FOUND,
-                            HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
-                            `Customer not found in Database ${req.params.customerId}`,
-                            null))
-                }
-                return res.status(HttpStatus.OK).send(
-                    prepareResponse(HttpStatus.OK,
-                        HttpStatus.getStatusText(HttpStatus.OK),
-                        "Customer retrieved successfully",
-                        customer))
+        .then(customer => {
+            if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
+                sendErorResponse(res, new Error("not found"))
             }
-        )
-        .catch(err => {
-            if ('ObjectId' === err.kind) {
-                return res.status(HttpStatus.NOT_FOUND).send(
-                    prepareResponse(HttpStatus.NOT_FOUND,
-                        HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
-                        `Customer not found in Database ${req.params.customerId}`,
-                        null))
-            }
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-                prepareResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                    HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR),
-                    err.message || "Error occurred when retrieving customer",
-                    null))
+            sendSucessResponse(res, customer, "Customer retrieved successfully")
         }
-
-        )
+        ).catch(err => sendErorResponse(res, err))
 
 }
-
-// Update a customer based on Id
+/**
+ * Update a customer based on Id.
+ * Return OK for success
+ * Return NOT_FOUND reponse if ID is not present in the database.
+ * Return SERVER_ERROR for any exceptions.
+ * @param {Object} req - Http Request
+ * @param {Object} res - Http Response
+ **/
 exports.update = (req, res) => {
-    // Validate Request
-    if (!req.body) {
-        return res.status(HttpStatus.BAD_REQUEST).send(
-            prepareResponse(HttpStatus.BAD_REQUEST,
-                HttpStatus.getStatusText(HttpStatus.BAD_REQUEST),
-                "Customer cannot be null",
-                null))
-    }
-
     // Find customer and update it with the request body
     Customer.findOneAndUpdate(
         {
@@ -139,80 +86,39 @@ exports.update = (req, res) => {
         .then(
             customer => {
                 if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
-                    return res.status(HttpStatus.NOT_FOUND).send(
-                        prepareResponse(HttpStatus.NOT_FOUND,
-                            HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
-                            `Customer not found in Database ${req.params.customerId}`,
-                            null))
+                    sendErorResponse(res, new Error("not found"))
                 }
-                return res.status(HttpStatus.OK).send(
-                    prepareResponse(HttpStatus.OK,
-                        HttpStatus.getStatusText(HttpStatus.OK),
-                        "Customer updated successfully",
-                        customer))
+                sendSucessResponse(res, customer, "Customer updated successfully")
             }
-        )
-        .catch(err => {
-            if ('ObjectId' === err.kind) {
-                return res.status(HttpStatus.NOT_FOUND).send(
-                    prepareResponse(HttpStatus.NOT_FOUND,
-                        HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
-                        `Customer not found in Database: ${req.params.customerId}`,
-                        null))
-            }
-            if ('ValidationError' === err.name) {
-                return res.status(HttpStatus.BAD_REQUEST).send(
-                    prepareResponse(HttpStatus.BAD_REQUEST,
-                        HttpStatus.getStatusText(HttpStatus.BAD_REQUEST),
-                        err.message || "Validation Error",
-                        null))
-            }
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-                prepareResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                    HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR),
-                    err.message || "Error occurred when updating customer",
-                    null))
-        }
-        )
+        ).catch(err => sendErorResponse(res, err))
 }
 
-// Delete a customer based on Id
+
+/**
+ * Delete a customer based on Id
+ * Return OK for success
+ * Return NOT_FOUND reponse if ID is not present in the database.
+ * Return SERVER_ERROR for any exceptions
+ * @param {Object} req - Http Request
+ * @param {Object} res - Http Response
+ */
 exports.delete = (req, res) => {
     Customer.findByIdAndRemove(req.params.customerId)
         .then(customer => {
             if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
-                return res.status(HttpStatus.NOT_FOUND).send(
-                    prepareResponse(HttpStatus.NOT_FOUND,
-                        HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
-                        `Customer not found in Database ${req.params.customerId}`,
-                        null))
+                sendErorResponse(res, new Error("not found"))
             }
-            return res.status(HttpStatus.OK).send(
-                prepareResponse(HttpStatus.OK,
-                    HttpStatus.getStatusText(HttpStatus.OK),
-                    "Customer deleted successfully",
-                    customer))
-        }).catch(err => {
-            if (err.kind === 'ObjectId') {
-                return res.status(HttpStatus.NOT_FOUND).send(
-                    prepareResponse(HttpStatus.NOT_FOUND,
-                        HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
-                        `Customer not found in Database: ${req.params.customerId}`,
-                        null))
-            }
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-                prepareResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                    HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR),
-                    err.message || "Error occurred when deleting customer",
-                    null))
-        })
+            sendSucessResponse(res, customer, "Customer deleted successfully")
+        }).catch(err => sendErorResponse(res, err))
 }
+
 
 /**
  * Default sorting of the results is by last updated timestamp in descending order.
  * Default values for offset is 0 and limit is 25.
  * Maximum value of limit is 100 to avoid attacks like Denial of Service
- **/
+ * @param {Object} reqQuery - query parameter object from the request
+ */
 function prepareFindOptions(reqQuery) {
     const LIMIT_RECORD_LISTING = 100
     const defaultSortBy = 'lastupdated'
@@ -234,7 +140,53 @@ function prepareFindOptions(reqQuery) {
     }
 }
 
-function prepareResponse(code, status, message, payload) {
+/**
+ * 
+ * @param {Object} res - Http Response
+ * @param {Object} data - Data to be sent in the payload
+ * @param {String} message - Brief description of the operation
+ */
+function sendSucessResponse(res, data, message) {
+    return res.status(HttpStatus.OK).send(
+        prepareResponseObject(HttpStatus.OK,
+            HttpStatus.getStatusText(HttpStatus.OK),
+            message,
+            data))
+}
+/** 
+ * @param {Object} res - Http Response
+ * @param {Object} error - Error Object 
+ */
+
+function sendErorResponse(res, error) {
+    if ('bad request' === error.message || 'ValidationError' === error.name) {
+        return res.status(HttpStatus.BAD_REQUEST).send(
+            prepareResponseObject(HttpStatus.BAD_REQUEST,
+                HttpStatus.getStatusText(HttpStatus.BAD_REQUEST),
+                error.message,
+                null))
+    }
+    if ('not found' === error.message || 'ObjectId' === error.kind) {
+        return res.status(HttpStatus.NOT_FOUND).send(
+            prepareResponseObject(HttpStatus.NOT_FOUND,
+                HttpStatus.getStatusText(HttpStatus.NOT_FOUND),
+                "Customer not found in Database",
+                null))
+    }
+    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
+        prepareResponseObject(HttpStatus.INTERNAL_SERVER_ERROR,
+            HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR),
+            error.message || "Error occurred during the operation",
+            null))
+}
+/**
+ * Prepare response object with the arguments
+ * @param {number} code - Http Status Code
+ * @param {string} status - Http Status
+ * @param {string} message - Brief Description of the operation
+ * @param {Object[]} payload - Array of Customer objects. Null in case of errors
+ */
+function prepareResponseObject(code, status, message, payload) {
     return {
         code,
         status,

@@ -1,3 +1,7 @@
+/**
+ * Define and handle routes of the application.
+ * @param {*} app - express app
+ */
 module.exports = (app) => {
     const customerController = require('../controllers/customer.controller');
 

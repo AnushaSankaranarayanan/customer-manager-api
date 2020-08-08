@@ -5,17 +5,24 @@ const mongoose = require('mongoose')
 
 mongoose.Promise = global.Promise
 
-// create express app
+/**
+ * create express app
+ */
 const app = express();
 
-// parse requests of content-type - application/x-www-form-urlencoded
+/**
+ * parse requests of content-type - application/x-www-form-urlencoded
+ */
 app.use(bodyParser.urlencoded({ extended: true }))
 
-// parse requests of content-type - application/json
+/**
+ * parse requests of content-type - application/json
+ */ 
 app.use(bodyParser.json())
 
-
-// Connecting to the database
+/**
+ * Connecting to the database
+ */ 
 mongoose.connect(dbConfig.url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -28,17 +35,16 @@ mongoose.connect(dbConfig.url, {
     process.exit();
 });
 
-// define a simple route
-app.get('/', (req, res) => {
-    res.json({ "message": "Welcome." });
-});
-
-// Require Customer Routes
+/**
+ * Require Customer Routes
+ */
 require('./app/routes/customer.routes')(app)
 
-const port = process.env.APP_PORT
+const port = process.env.APP_PORT || 9000
 
-// listen for requests
+/**
+ * listen for requests
+ */
 app.listen(port, () => {
-    console.log("Server is listening on port 9000");
+    console.log(`Server is listening on port ${port}`);
 });

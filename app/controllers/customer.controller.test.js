@@ -31,16 +31,6 @@ describe('Customer controller tests', () => {
     jest.resetModules()
   })
 
-  test('Create Customer - Invalid request body - Failure', async () => {
-    jest.spyOn(Customer.prototype, 'save')
-      .mockImplementationOnce(() => Promise.resolve({}))
-    const req = mockRequest()
-    const res = mockResponse()
-    await customerController.create(req, res)
-    expect(res.status).toBeCalledWith(400)
-  })
-
-
   test('Create Customer - Success', async () => {
     const spy = jest.spyOn(Customer.prototype, 'save')
       .mockImplementationOnce(() => Promise.resolve({}))
@@ -55,7 +45,7 @@ describe('Customer controller tests', () => {
     const res = mockResponse()
     await customerController.create(validReq, res)
     expect(spy).toHaveBeenCalled()
-    expect(res.status).toBeCalledWith(201)
+    expect(res.status).toBeCalledWith(200)
   })
 
   test('Get Customer by Invalid Id - Failure', async () => {
@@ -148,17 +138,6 @@ describe('Customer controller tests', () => {
     expect(res.status).toBeCalledWith(200);
     expect(getSpy).toBeCalled()
   });
-
-  test('Update Customer Invalid request body - Failure', async () => {
-    const getSpy = jest.fn().mockReturnValue(Promise.resolve({}))
-    Customer.findOneAndUpdate.mockImplementation(getSpy);
-    const req = mockRequest();
-    const res = mockResponse();
-    req.params = { customerId: '123' };
-    await customerController.update(req, res);
-    expect(res.status).toBeCalledWith(400);
-  });
-
 
   test('Update Customer by Invalid Id - Failure', async () => {
     const error = new Error();

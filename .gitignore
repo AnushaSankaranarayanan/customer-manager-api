@@ -40,3 +40,10 @@ jspm_packages
 
 # IDE files
 .vscode/
+
+# Environment configuration
+.env
+
+# SONAR configuration
+.scannerwork/report-task.txt
+.scannerwork/.sonar_lock
