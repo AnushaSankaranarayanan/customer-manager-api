@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
 // Require Customer Routes
 require('./app/routes/customer.routes')(app)
 
-const port = process.env.PORT || 9000
+const port = process.env.APP_PORT
 
 // listen for requests
 app.listen(port, () => {

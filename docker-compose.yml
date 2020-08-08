@@ -1,0 +1,17 @@
+version: "2"
+services:
+  web:
+    build: .
+    environment:
+    - MONGO_URL=${MONGO_BASE_URL}:${MONGO_DB_PORT}:/${MONGO_DB_NAME}
+    - APP_PORT=${APP_PORT}
+    ports:
+    - ${APP_PORT}:${APP_PORT}
+    depends_on:
+    - mongo
+  mongo:
+    image: mongo
+    ports:
+    - ${MONGO_DB_PORT}:${MONGO_DB_PORT}
+    volumes:
+    - '${MONGO_DB_LOCAL_PERSISTENCE_PATH}:/data/db'
