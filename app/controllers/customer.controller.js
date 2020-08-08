@@ -1,5 +1,6 @@
 const Customer = require('../models/customer.model')
 const HttpStatus = require('http-status-codes')
+const { logger } = require('../../config/logger.config')
 
 /**
  * Save new customer to the database.
@@ -23,7 +24,7 @@ exports.create = (req, res) => {
     // Save Customer in DB
     customer.save()
         .then(createdCustomer => sendSucessResponse(res, createdCustomer, "Customer created successfully"))
-        .catch(err => sendErorResponse(res, err))
+        .catch(err => sendErorResponse(req, res, err))
 }
 /**
  * Retrieve all customers from the database.
@@ -35,7 +36,7 @@ exports.create = (req, res) => {
 exports.findAll = (req, res) => {
     Customer.paginate({}, prepareFindOptions(req.query))
         .then(customers => sendSucessResponse(res, customers, "Customer retrieved successfully"))
-        .catch(err => sendErorResponse(res, err))
+        .catch(err => sendErorResponse(req, res, err))
 }
 
 /**
@@ -50,11 +51,10 @@ exports.findOne = (req, res) => {
     Customer.findById(req.params.customerId)
         .then(customer => {
             if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
-                sendErorResponse(res, new Error("not found"))
+                return sendErorResponse(req, res, new Error("not found"))
             }
             sendSucessResponse(res, customer, "Customer retrieved successfully")
-        }
-        ).catch(err => sendErorResponse(res, err))
+        }).catch(err => sendErorResponse(req, res, err))
 
 }
 /**
@@ -86,11 +86,11 @@ exports.update = (req, res) => {
         .then(
             customer => {
                 if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
-                    sendErorResponse(res, new Error("not found"))
+                    return sendErorResponse(req, res, new Error("not found"))
                 }
                 sendSucessResponse(res, customer, "Customer updated successfully")
             }
-        ).catch(err => sendErorResponse(res, err))
+        ).catch(err => sendErorResponse(req, res, err))
 }
 
 
@@ -106,10 +106,10 @@ exports.delete = (req, res) => {
     Customer.findByIdAndRemove(req.params.customerId)
         .then(customer => {
             if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
-                sendErorResponse(res, new Error("not found"))
+                return sendErorResponse(req, res, new Error("not found"))
             }
             sendSucessResponse(res, customer, "Customer deleted successfully")
-        }).catch(err => sendErorResponse(res, err))
+        }).catch(err => sendErorResponse(req, res, err))
 }
 
 
@@ -131,6 +131,7 @@ function prepareFindOptions(reqQuery) {
     const offset = reqQuery.offset || 0
     let limit = reqQuery.limit || 25
     if (limit > LIMIT_RECORD_LISTING) {
+        logger.warn(`Listing Limit chosen beyond the permissible limit: ${limit} `)
         limit = LIMIT_RECORD_LISTING
     }
     return {
@@ -158,8 +159,9 @@ function sendSucessResponse(res, data, message) {
  * @param {Object} error - Error Object 
  */
 
-function sendErorResponse(res, error) {
-    if ('bad request' === error.message || 'ValidationError' === error.name) {
+function sendErorResponse(req, res, error) {
+    logger.error(`Error Occurred during processing. Message : ${error.message}`)
+    if ('ValidationError' === error.name) {
         return res.status(HttpStatus.BAD_REQUEST).send(
             prepareResponseObject(HttpStatus.BAD_REQUEST,
                 HttpStatus.getStatusText(HttpStatus.BAD_REQUEST),

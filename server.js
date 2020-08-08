@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const dbConfig = require('./config/database.config')
 const mongoose = require('mongoose')
-
+const { logger } = require('./config/logger.config')
 mongoose.Promise = global.Promise
 
 /**
@@ -17,21 +17,21 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 /**
  * parse requests of content-type - application/json
- */ 
+ */
 app.use(bodyParser.json())
 
 /**
  * Connecting to the database
- */ 
+ */
 mongoose.connect(dbConfig.url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
     useCreateIndex: true
 }).then(() => {
-    console.log("Successfully connected to the database");
+    logger.info(`Successfully connected to the database`)
 }).catch(err => {
-    console.log('Could not connect to the database. Exiting now...', err);
+    logger.error('Could not connect to the database. Exiting now...', err)
     process.exit();
 });
 
@@ -46,5 +46,5 @@ const port = process.env.APP_PORT || 9000
  * listen for requests
  */
 app.listen(port, () => {
-    console.log(`Server is listening on port ${port}`);
+    logger.info(`Server is listening on port ${port}`);
 });
