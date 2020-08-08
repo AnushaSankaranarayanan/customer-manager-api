@@ -1,14 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const basicAuth = require('express-basic-auth')
 const dbConfig = require('./config/database.config')
 const mongoose = require('mongoose')
 const { logger } = require('./config/logger.config')
+const authConfig = require('./config/auth.config')
 mongoose.Promise = global.Promise
 
 /**
- * create express app
+ * create express app and configure basic auth
  */
-const app = express();
+const app = express()
+app.use(basicAuth(authConfig))
 
 /**
  * parse requests of content-type - application/x-www-form-urlencoded
