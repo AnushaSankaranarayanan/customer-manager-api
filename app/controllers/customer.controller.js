@@ -137,6 +137,7 @@ const { logger } = require('../../config/logger.config')
  *               schema:
  *                 type: string
  *                 enum: [name, surname, email, initials]
+ *                 default: lastupdated
  *         sortDirParam:
  *               name: sortdir
  *               in: query
@@ -145,6 +146,7 @@ const { logger } = require('../../config/logger.config')
  *               schema:
  *                 type: string
  *                 enum: [asc, desc]
+ *                 default: desc
  *
  *   responses:
  *        200Ok:
