@@ -186,7 +186,7 @@ const { logger } = require('../../config/logger.config')
  *
  * /customer:
  *   post:
- *     description: Creates a customer
+ *     summary: Creates a customer
  *     produces:
  *       - application/json
  *     parameters:
@@ -285,7 +285,7 @@ exports.findOne = (req, res) => {
  *
  * /customer/{customerId}:
  *   put:
- *     description: Update a customer by Id
+ *     summary: Update a customer by Id
  *     produces:
  *       - application/json
  *     parameters:
@@ -339,7 +339,7 @@ exports.update = (req, res) => {
  *
  * /customer/{customerId}:
  *   delete:
- *     description: Delete a customer by Id
+ *     summary: Delete a customer by Id
  *     produces:
  *       - application/json
  *     parameters:
