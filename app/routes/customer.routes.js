@@ -1,3 +1,6 @@
+const { baseUrl } = require('../../config/url.config')
+const customerBaseUrl = `${baseUrl}/customer`
+const customerUrlById = `${customerBaseUrl}/:customerId`
 /**
  * Define and handle routes of the application.
  * @param {*} app - express app
@@ -6,17 +9,17 @@ module.exports = (app) => {
     const customerController = require('../controllers/customer.controller');
 
     // Create a new customer
-    app.post('/customer', customerController.create);
+    app.post(customerBaseUrl, customerController.create);
 
     // Retrieve all customers
-    app.get('/customer', customerController.findAll);
+    app.get(customerBaseUrl, customerController.findAll);
 
     // Retrieve a single customer by customerId
-    app.get('/customer/:customerId', customerController.findOne);
+    app.get(customerUrlById, customerController.findOne);
 
     // Update a customer by customerId
-    app.put('/customer/:customerId', customerController.update);
+    app.put(customerUrlById, customerController.update);
 
     // Delete a customer by customerId
-    app.delete('/customer/:customerId', customerController.delete);
+    app.delete(customerUrlById, customerController.delete);
 }

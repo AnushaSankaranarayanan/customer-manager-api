@@ -10,7 +10,7 @@ const options = {
             title: 'Customer Manager API',
             version: '1.0.0',
         },
-        basePath: '/'
+        basePath: '/api/v1'
     },
     apis: ['./app/controllers/*.js'],
 }

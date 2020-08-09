@@ -4,7 +4,7 @@
     "title": "Customer Manager API",
     "version": "1.0.0"
   },
-  "basePath": "/",
+  "basePath": "/api/v1",
   "paths": {
     "/customer": {
       "post": {
