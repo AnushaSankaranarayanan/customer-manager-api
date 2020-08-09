@@ -3,13 +3,205 @@ const HttpStatus = require('http-status-codes')
 const { logger } = require('../../config/logger.config')
 
 /**
- * Save new customer to the database.
- * Return OK for success
- * Return BAD_REQUEST for invalid requests.
- * Return SERVER_ERROR for any exceptions.
- * @param {Object} req - Http Request
- * @param {Object} res - Http Response
- **/
+ * @swagger
+ * components:
+ *   schemas:
+ *     RequestCustomer:
+ *       type: object
+ *       required:
+ *           - name
+ *           - surname
+ *           - email
+ *       properties:         
+ *           name:
+ *               type: string
+ *           surname:
+ *               type: string
+ *           email:
+ *               type: string
+ *           initials:
+ *               type: string
+ *           mobile:
+ *               type: string
+ *     CustomerInDB:
+ *         allOf:
+ *           - $ref: '#/components/schemas/RequestCustomer'
+ *           - type: object
+ *             properties:
+ *                id:
+ *                  type: string            
+ *                lastupdated:
+ *                  type: string
+ *     PaginatedCustomerData:
+ *       type: object
+ *       properties:
+ *           docs:
+ *               type: array
+ *               items:
+ *                  $ref: '#/components/schemas/CustomerInDB'         
+ *           totalDocs:
+ *               type: number
+ *           offset:
+ *               type: number
+ *           limit:
+ *               type: number
+ *           totalPages:
+ *               type: number
+ *           page:
+ *               type: number
+ *           pagingCounter:
+ *               type: number
+ *           hasPrevPage:
+ *               type: boolean
+ *           hasNextPage:
+ *               type: boolean
+ *           prevPage:
+ *               type: number
+ *           nextPage:
+ *               type: number
+ *     BaseResponse:
+ *         type: object
+ *         properties:
+ *             code:
+ *                 type: number            
+ *             status:
+ *                 type: string
+ *             message:
+ *                 type: string
+ *     SuccessResponse:
+ *         allOf:
+ *           - $ref: '#/components/schemas/BaseResponse'
+ *           - type: object
+ *             properties:
+ *               payload:
+ *                 allOf:
+ *                   - $ref: '#/components/schemas/CustomerInDB'
+ *     SuccessPaginationResponse:
+ *         allOf:
+ *           - $ref: '#/components/schemas/BaseResponse'
+ *           - type: object
+ *             properties:
+ *               payload:
+ *                 allOf:
+ *                   - $ref: '#/components/schemas/PaginatedCustomerData'
+ *     ErrorResponse:
+ *         allOf:
+ *           - $ref: '#/components/schemas/BaseResponse'
+ *           - type: object
+ *             properties:
+ *               payload:
+ *                 type: string
+ *                 nullable: true
+ *                     
+ *   parameters:
+ *         idParam:
+ *               name: customerId
+ *               in: formData
+ *               description: Customer Id.
+ *               required: true
+ *               type: string
+ *         customerParam:
+ *               name: customer
+ *               description: Customer object
+ *               in:  body
+ *               required: true
+ *               type: string
+ *               schema:
+ *                  $ref: '#/components/schemas/RequestCustomer'
+ *         offsetParam:
+ *               name: offset
+ *               in: query
+ *               description: Number of items to skip before returning the results.
+ *               required: false
+ *               schema:
+ *                 type: integer
+ *                 format: number
+ *                 minimum: 0
+ *                 default: 0
+ *         limitParam:
+ *               name: limit
+ *               in: query
+ *               description: Maximum number of items to return.
+ *               required: false
+ *               schema:
+ *                 type: integer
+ *                 format: number
+ *                 minimum: 1
+ *                 maximum: 100
+ *                 default: 25
+ *         sortKeyParam:
+ *               name: sortkey
+ *               in: query
+ *               description: Sort Key.
+ *               required: false
+ *               schema:
+ *                 type: string
+ *                 enum: [name, surname, email, initials]
+ *         sortDirParam:
+ *               name: sortdir
+ *               in: query
+ *               description: Sort Direction.
+ *               required: false
+ *               schema:
+ *                 type: string
+ *                 enum: [asc, desc]
+ *
+ *   responses:
+ *        200Ok:
+ *            description: Success
+ *            content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/SuccessResponse'
+ *        200ListingOk:
+ *            description: Success
+ *            content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/SuccessPaginationResponse'
+ *        400BadRequest:
+ *            description: Validation Error
+ *            content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/ErrorResponse'       
+ *        401Unauthorized:
+ *            description: Unauthorized access. 
+ *        404NotFound:
+ *           description: The specified resource was not found.
+ *           content:
+ *              application/json:
+ *                 schema:
+ *                      $ref: '#/components/schemas/ErrorResponse'
+ *        500ServerError:
+ *           description: Server Error
+ *           content:
+ *              application/json:
+ *                 schema:
+ *                      $ref: '#/components/schemas/ErrorResponse'
+ */
+
+/**
+ * @swagger
+ *
+ * /customer:
+ *   post:
+ *     description: Creates a customer
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - id: customer
+ *         $ref: '#/components/parameters/customerParam'
+ *     responses:
+ *       200:
+ *         $ref: '#/components/responses/200Ok'
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *          $ref: '#/components/responses/401Unauthorized'
+ *       500:
+ *         $ref: '#/components/responses/500ServerError'
+ */
 exports.create = (req, res) => {
     // Create a Customer
     const customer = new Customer({
@@ -26,13 +218,31 @@ exports.create = (req, res) => {
         .then(createdCustomer => sendSucessResponse(res, createdCustomer, "Customer created successfully"))
         .catch(err => sendErorResponse(req, res, err))
 }
+
 /**
- * Retrieve all customers from the database.
- * Return OK for success
- * Return SERVER_ERROR for other exceptions.
- * @param {Object} req - Http Request
- * @param {Object} res - Http Response
- **/
+ * @swagger
+ * /customer:
+ *   get:
+ *     summary: Get all customers
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - id: offset
+ *         $ref: '#/components/parameters/offsetParam'
+ *       - id: limit
+ *         $ref: '#/components/parameters/limitParam'
+ *       - id: sortkey
+ *         $ref: '#/components/parameters/sortKeyParam'
+ *       - id: sortDir
+ *         $ref: '#/components/parameters/sortDirParam'
+ *     responses:
+ *       200:
+ *         $ref: '#/components/responses/200ListingOk'
+ *       401:
+ *          $ref: '#/components/responses/401Unauthorized'
+ *       500:
+ *         $ref: '#/components/responses/500ServerError'
+ */
 exports.findAll = (req, res) => {
     Customer.paginate({}, prepareFindOptions(req.query))
         .then(customers => sendSucessResponse(res, customers, "Customer retrieved successfully"))
@@ -40,13 +250,25 @@ exports.findAll = (req, res) => {
 }
 
 /**
- * Find a single customer based on Id.
- * Return OK for success
- * Return NOT_FOUND reponse if ID is not present in the database.
- * Return SERVER_ERROR for any other exceptions. 
- * @param {Object} req - Http Request
- * @param {Object} res - Http Response
- **/
+ * @swagger
+ * /customer/{customerId}:
+ *   get:
+ *     summary: Get a customer by Id
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - id: customerId
+ *         $ref: '#/components/parameters/idParam'
+ *     responses:
+ *       200:
+ *          $ref: '#/components/responses/200Ok'
+ *       401:
+ *          $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *          $ref: '#/components/responses/404NotFound'
+ *       500:
+ *          $ref: '#/components/responses/500ServerError'
+ */
 exports.findOne = (req, res) => {
     Customer.findById(req.params.customerId)
         .then(customer => {
@@ -57,14 +279,32 @@ exports.findOne = (req, res) => {
         }).catch(err => sendErorResponse(req, res, err))
 
 }
+
 /**
- * Update a customer based on Id.
- * Return OK for success
- * Return NOT_FOUND reponse if ID is not present in the database.
- * Return SERVER_ERROR for any exceptions.
- * @param {Object} req - Http Request
- * @param {Object} res - Http Response
- **/
+ * @swagger
+ *
+ * /customer/{customerId}:
+ *   put:
+ *     description: Update a customer by Id
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - id: customerId
+ *         $ref: '#/components/parameters/idParam'
+ *       - id: customer
+ *         $ref: '#/components/parameters/customerParam'
+ *     responses:
+ *       200:
+ *         $ref: '#/components/responses/200Ok'
+ *       400:
+ *         $ref: '#/components/responses/400BadRequest'
+ *       401:
+ *          $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *          $ref: '#/components/responses/404NotFound'
+ *       500:
+ *         $ref: '#/components/responses/500ServerError'
+ */
 exports.update = (req, res) => {
     // Find customer and update it with the request body
     Customer.findOneAndUpdate(
@@ -95,12 +335,25 @@ exports.update = (req, res) => {
 
 
 /**
- * Delete a customer based on Id
- * Return OK for success
- * Return NOT_FOUND reponse if ID is not present in the database.
- * Return SERVER_ERROR for any exceptions
- * @param {Object} req - Http Request
- * @param {Object} res - Http Response
+ * @swagger
+ *
+ * /customer/{customerId}:
+ *   delete:
+ *     description: Delete a customer by Id
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - id: customerId
+ *         $ref: '#/components/parameters/idParam'
+ *     responses:
+ *       200:
+ *         $ref: '#/components/responses/200Ok'
+ *       401:
+ *          $ref: '#/components/responses/401Unauthorized'
+ *       404:
+ *          $ref: '#/components/responses/404NotFound'
+ *       500:
+ *         $ref: '#/components/responses/500ServerError'
  */
 exports.delete = (req, res) => {
     Customer.findByIdAndRemove(req.params.customerId)
