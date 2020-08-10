@@ -4,6 +4,8 @@ const basicAuth = require('express-basic-auth')
 const dbConfig = require('./config/database.config')
 const mongoose = require('mongoose')
 const { logger } = require('./config/logger.config')
+const { baseUrl } = require('./config/url.config')
+var customerRouter = require('./app/routes/customer.routes')
 const authConfig = require('./config/auth.config')
 const swaggerConfig = require('./config/swagger.config')
 const swaggerUi = require('swagger-ui-express')
@@ -15,6 +17,9 @@ mongoose.Promise = global.Promise
  */
 const app = express()
 
+/**
+ * expose swagger end point
+ */
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerConfig))
 
 /**
@@ -45,9 +50,9 @@ mongoose.connect(dbConfig.url, {
 })
 
 /**
- * Require Customer Routes
+ * Setup and handle Customer Routes
  */
-require('./app/routes/customer.routes')(app)
+app.use(baseUrl,customerRouter)
 
 const port = process.env.APP_PORT || 9000
 

@@ -1,25 +1,21 @@
-const { baseUrl } = require('../../config/url.config')
-const customerBaseUrl = `${baseUrl}/customer`
+const express = require('express')
+const customerBaseUrl = '/customer'
 const customerUrlById = `${customerBaseUrl}/:customerId`
-/**
- * Define and handle routes of the application.
- * @param {*} app - express app
- */
-module.exports = (app) => {
-    const customerController = require('../controllers/customer.controller');
+const customerController = require('../controllers/customer.controller')
+const router = express.Router()
 
-    // Create a new customer
-    app.post(customerBaseUrl, customerController.create);
+router.post(customerBaseUrl, customerController.create)
 
-    // Retrieve all customers
-    app.get(customerBaseUrl, customerController.findAll);
+// Retrieve all customers
+router.get(customerBaseUrl, customerController.findAll)
 
-    // Retrieve a single customer by customerId
-    app.get(customerUrlById, customerController.findOne);
+// Retrieve a single customer by customerId
+router.get(customerUrlById, customerController.findOne)
 
-    // Update a customer by customerId
-    app.put(customerUrlById, customerController.update);
+// Update a customer by customerId
+router.put(customerUrlById, customerController.update)
 
-    // Delete a customer by customerId
-    app.delete(customerUrlById, customerController.delete);
-}
+// Delete a customer by customerId
+router.delete(customerUrlById, customerController.delete)
+
+module.exports = router
