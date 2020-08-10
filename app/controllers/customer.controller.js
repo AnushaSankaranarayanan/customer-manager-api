@@ -423,6 +423,13 @@ function sendErrorResponse(req, res, error) {
                 error.message,
                 null))
     }
+    if (error.message.includes('duplicate')) {
+        return res.status(HttpStatus.BAD_REQUEST).send(
+            prepareResponseObject(HttpStatus.BAD_REQUEST,
+                HttpStatus.getStatusText(HttpStatus.BAD_REQUEST),
+                error.message,
+                null))
+    }
     if ('not found' === error.message || 'ObjectId' === error.kind) {
         return res.status(HttpStatus.NOT_FOUND).send(
             prepareResponseObject(HttpStatus.NOT_FOUND,
