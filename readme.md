@@ -1,5 +1,5 @@
 ## Introduction
-customer-manager-api is a REST based microservice that handles common customer operations. This app is guarded by BASIC Authentication.The app is connected to a MongoDB container for persistence.
+customer-manager-api is a REST based microservice that handles common customer operations. This app is secured by BASIC Authentication.The app is connected to a MongoDB container for persistence.
 
 ## The app exposes the below methods
 - Create a customer with given name, surname, email, initials and mobile number.
@@ -27,7 +27,7 @@ lastupdated - Datetime when the customer was created/updated last
 ## List of end points
 ```shell
 GET    -  /api-docs - Swagger end point
-POST   - ​/api/v1/customer - Create customer
+POST   - ​ /api/v1/customer - Create customer
 GET    -  ​/api/v1/customer - List all customers , sorted by the fields, delimited by offset and limit. If query parameters are not specified , results are sorted based on lastupdated in descending order with a maximum of 25 customers.
 GET    -  ​/api/v1/customer/{customerId} - Get a customer based on Id
 PUT    -  ​/api/v1/customer/{customerId} - Update a customer based on Id
@@ -55,6 +55,22 @@ DELETE -  ​/api/v1/customer/{customerId} - Delete a customer based on Id
 
 ```
 
+## Sonar Results
+* Install [Sonarqube](https://docs.sonarqube.org/latest/setup/get-started-2-minutes/) on your system and follow along to set up new project in sonarqube.
+
+* Follow along and install sonar-scanner as per the instuctions when setting up project. Use `sonar.project.properties` in the project root folder
+
+* When you are done , run `sonar-scanner` from the root directory of the project
+
+* Below is the overview of the application code from sonarqube . Quality gate is **GREEN**
+
+```shell
+		Lines of Code	Bugs	Vulnerabilities	Code Smells	Security Hotspots	Coverage	Duplications	
+app              169               0                   0           0                0              97.8%           0.0%
+controllers      121               0                   0           0                0              97.3%           0.0%
+models            37               0                   0           0                0              100%            0.0%
+routes	          11               0                   0           0                0              100%            0.0%
+```
 ## Requirements
 
 Install [Docker](https://www.docker.com/) on your system.
@@ -70,14 +86,44 @@ Install [Docker Compose](http://docs.docker.com/compose/) on your system.
 
 
 ## Running the Application locally
-
+#### Running using docker-compose
 - Create a file named `.env` in the project root directory. Alternatively copy over the `.sample-env` file and rename as `.env`
 
 - Set the values for all the environment variables. **Do not forget** to create directory in your host that you had specified in the `MONGO_DB_LOCAL_PERSISTENCE_PATH` in the `above .env` file
 
 - Run `docker-compose up --build` to create and start the containers. The app should then be running on your docker daemon on port 9000 (On OS X you can use `boot2docker ip` to find out the IP address).
+ ```
+./customer-manager-api/docker-compose up --build
+```
+- Once the application is up - issue requests to : http://localhost:9000/api/v1. The app is secured by Basic Authentication - See `/config/auth.config.js` for more information.
 
-- Once the application is up - issue requests to : http://localhost:9000/api/v1. The app is guareded by Basic Authentication - See `/config/auth.config.js` for more information.
+- To stop the containers, run docker-compose stop
+ ```
+./customer-manager-api/docker-compose stop
+```
+#### Running in kubernetes
+- Ensure that a kubernetes cluster is up and running.For minikube, please refer [here](https://minikube.sigs.k8s.io/docs/start/)
+
+- Ensure that `kubectl` has access to the running cluster.
+
+- **Replace the text `<node-path-to-persistent-storage>` in `/customer-manager-api/kube/mongo.yaml` -> spec.hostPath.path with the actual path of the persistence storage**
+Example:
+```
+hostPath:
+    path: "/home/mongo/storage"
+```
+- Run /customer-manager-api/kube/start.sh 
+```
+./customer-manager-api/kube/start.sh
+```
+- The application is up - issue requests to : http://<cluster-ip>:<app-svc-port>/api/v1. The app is guareded by Basic Authentication - See `/config/auth.config.js` for more information.
+```
+http://172.17.0.3:31997/api/v1/customer
+```
+- To stop and remove the deployments from kubernetes , run clean-up.sh
+ ```
+./customer-manager-api/kube/clean-up.sh
+```
 
 
 ## Example request and reponse
@@ -272,5 +318,10 @@ Response
 
      
 ## Known caveats
--  The API is  guarded using Basic Authentication mechanism. This has to be upgrdaded to a more sophisticated mechanism like OAuth/JWT in the future. . This has to be implemenetd in the future
+-  The end points are secured with Basic Authentication mechanism. This has to be changed to a more secure mechanisms like OAuth/JWT in the future.
+-  When building from the Redhat UBI node image , there is a warning 
+`npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@2.1.3: wanted {"os":"darwin","arch":"any"} (current: {"os":"linux","arch":"x64"}`. 
+However this warning is not encountered in official node image(node:12) from Dockerhub.The warning has be discussed in the [npm community](https://npm.community/t/how-can-i-correct-dependency-errors-in-a-project/5590)
+-  For kubernetes deployment , variables like Application Port , MongDB URL  can be specified as environment variables.ConfigMaps can also be considered.
+
 
