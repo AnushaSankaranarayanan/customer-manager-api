@@ -1,2 +1,10 @@
+app/**/*.test.js
 node_modules
+kube
 npm-debug.log
+coverage
+docker-compose.yml
+sonar-project.properties
+swagger.*
+readme.md
+Dockerfile
