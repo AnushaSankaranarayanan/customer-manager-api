@@ -4,6 +4,7 @@ const customerUrlById = `${customerBaseUrl}/:customerId`
 const customerController = require('../controllers/customer.controller')
 const router = express.Router()
 
+//Create a customer
 router.post(customerBaseUrl, customerController.create)
 
 // Retrieve all customers

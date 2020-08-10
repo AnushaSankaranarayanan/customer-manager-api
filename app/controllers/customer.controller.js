@@ -218,7 +218,7 @@ exports.create = (req, res) => {
     // Save Customer in DB
     customer.save()
         .then(createdCustomer => sendSucessResponse(res, createdCustomer, "Customer created successfully"))
-        .catch(err => sendErorResponse(req, res, err))
+        .catch(err => sendErrorResponse(req, res, err))
 }
 
 /**
@@ -248,7 +248,7 @@ exports.create = (req, res) => {
 exports.findAll = (req, res) => {
     Customer.paginate({}, prepareFindOptions(req.query))
         .then(customers => sendSucessResponse(res, customers, "Customer retrieved successfully"))
-        .catch(err => sendErorResponse(req, res, err))
+        .catch(err => sendErrorResponse(req, res, err))
 }
 
 /**
@@ -275,10 +275,10 @@ exports.findOne = (req, res) => {
     Customer.findById(req.params.customerId)
         .then(customer => {
             if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
-                return sendErorResponse(req, res, new Error("not found"))
+                return sendErrorResponse(req, res, new Error("not found"))
             }
             sendSucessResponse(res, customer, "Customer retrieved successfully")
-        }).catch(err => sendErorResponse(req, res, err))
+        }).catch(err => sendErrorResponse(req, res, err))
 
 }
 
@@ -328,11 +328,11 @@ exports.update = (req, res) => {
         .then(
             customer => {
                 if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
-                    return sendErorResponse(req, res, new Error("not found"))
+                    return sendErrorResponse(req, res, new Error("not found"))
                 }
                 sendSucessResponse(res, customer, "Customer updated successfully")
             }
-        ).catch(err => sendErorResponse(req, res, err))
+        ).catch(err => sendErrorResponse(req, res, err))
 }
 
 
@@ -361,10 +361,10 @@ exports.delete = (req, res) => {
     Customer.findByIdAndRemove(req.params.customerId)
         .then(customer => {
             if (!customer) { //This occurs when a record is deleted and subsequently queried upon.
-                return sendErorResponse(req, res, new Error("not found"))
+                return sendErrorResponse(req, res, new Error("not found"))
             }
             sendSucessResponse(res, customer, "Customer deleted successfully")
-        }).catch(err => sendErorResponse(req, res, err))
+        }).catch(err => sendErrorResponse(req, res, err))
 }
 
 
@@ -414,7 +414,7 @@ function sendSucessResponse(res, data, message) {
  * @param {Object} error - Error Object 
  */
 
-function sendErorResponse(req, res, error) {
+function sendErrorResponse(req, res, error) {
     logger.error(`Error Occurred during processing. Message : ${error.message}`)
     if ('ValidationError' === error.name) {
         return res.status(HttpStatus.BAD_REQUEST).send(
