@@ -31,6 +31,36 @@ describe('Customer controller tests', () => {
     jest.resetModules()
   })
 
+  test('Create Customer - Duplicate in DB - Failure', async () => {
+    const spy = jest.spyOn(Customer.prototype, 'save')
+      .mockImplementationOnce(() => Promise.reject(new Error('duplicate')))
+    const validReq = mockRequest()
+    validReq.body = {
+      name: 'testname',
+      surname: 'test surname',
+      email: 'test@example.com',
+      initials: 't',
+      mobile: '01234567'
+    }
+    const res = mockResponse()
+    await customerController.create(validReq, res)
+    expect(spy).toHaveBeenCalled()
+  })
+  test('Create Customer - Server Error', async () => {
+    const spy = jest.spyOn(Customer.prototype, 'save')
+      .mockImplementationOnce(() => Promise.reject(new Error()))
+    const validReq = mockRequest()
+    validReq.body = {
+      name: 'testname',
+      surname: 'test surname',
+      email: 'test@example.com',
+      initials: 't',
+      mobile: '01234567'
+    }
+    const res = mockResponse()
+    await customerController.create(validReq, res)
+    expect(spy).toHaveBeenCalled()
+  })
   test('Create Customer - Success', async () => {
     const spy = jest.spyOn(Customer.prototype, 'save')
       .mockImplementationOnce(() => Promise.resolve({}))
