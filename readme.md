@@ -1,9 +1,9 @@
 ## Introduction
 customer-manager-api is a REST based microservice that handles common customer operations. This app is secured by BASIC Authentication.The app is connected to a MongoDB container for persistence.
 
-## The app exposes the below methods
+## The app exposes end points for the below operations:
 - Create a customer with given name, surname, email, initials and mobile number.
-- Get list of customets. The list can be sorted on any of the above fields. The customers are listed in pages. The list can be delimited with an offset and a limit.
+- Get list of customers. The list can be sorted on any of the above fields. The customers are listed in pages. The list can be delimited with an offset and a limit.
 - Get a customer based on Id. 
 - Update a customer based on Id. 
 - Delete a customer based on Id.
@@ -13,13 +13,13 @@ customer-manager-api is a REST based microservice that handles common customer o
 Customer:
 ******************
 ```shell
-id  - Auto Generated Primary Key
-name - Name of the customer(mandatory field)
-surname - Surname of the customer(mandatory field)
-email - Email of the customer(mandatory field)
-initials - Initials of the customer
-mobile - Mobile number of the customer
-lastupdated - Datetime when the customer was created/updated last
+id            - Auto Generated Primary Key
+name          - Name of the customer(mandatory field)
+surname       - Surname of the customer(mandatory field)
+email         - Email of the customer(mandatory field)
+initials      - Initials of the customer
+mobile        - Mobile number of the customer
+lastupdated   - Datetime when the customer was created/updated last
 ```
 
 
@@ -62,12 +62,13 @@ DELETE -  ​/api/v1/customer/{customerId} - Delete a customer based on Id
 
 * When you are done , run `sonar-scanner` from the root directory of the project
 
-* Below is the overview of the application code from sonarqube . Quality gate is **GREEN**
+* Below is the overview of the application source code from sonarqube . Quality gate is **GREEN**
 
 ```shell
 		Lines of Code	Bugs	Vulnerabilities	Code Smells	Security Hotspots	Coverage	Duplications	
-app              169               0                   0           0                0              97.8%           0.0%
-controllers      121               0                   0           0                0              97.3%           0.0%
+app              176               0                   0           0                0              99.0%           0.0%
+-----------------------------------------------------------------------------------------------------------------------
+controllers      128               0                   0           0                0              98.7%           0.0%
 models            37               0                   0           0                0              100%            0.0%
 routes	          11               0                   0           0                0              100%            0.0%
 ```
@@ -90,8 +91,10 @@ Install [Docker Compose](http://docs.docker.com/compose/) on your system.
 - Create a file named `.env` in the project root directory. Alternatively copy over the `.sample-env` file and rename as `.env`
 
 - Set the values for all the environment variables. **Do not forget** to create directory in your host that you had specified in the `MONGO_DB_LOCAL_PERSISTENCE_PATH` in the `above .env` file
-
-- Run `docker-compose up --build` to create and start the containers. The app should then be running on your docker daemon on port 9000 (On OS X you can use `boot2docker ip` to find out the IP address).
+```
+MONGO_DB_LOCAL_PERSISTENCE_PATH=/home/mongo/storage
+```
+- Run `docker-compose up --build` to create and start the containers. On success, The app  would be running on port 9000.
  ```
 ./customer-manager-api/docker-compose up --build
 ```
